@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IORA · Pré-checagem</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{min-height:100vh;background:#080c14;font-family:Georgia,serif;color:#ddd8d0;display:flex;flex-direction:column;align-items:center;padding:48px 20px 80px}
+.label{font-family:'Courier New',monospace;font-size:10px;letter-spacing:7px;color:#00c48c;text-transform:uppercase;margin-bottom:14px;text-align:center}
+h1{font-size:clamp(22px,5vw,36px);font-weight:400;color:#ede9e1;text-align:center;margin-bottom:10px}
+.sub{font-family:'Courier New',monospace;font-size:11px;color:#2e3d40;letter-spacing:2px;text-align:center}
+.line{width:48px;height:1px;background:#00c48c;margin:18px auto 40px}
+.wrap{width:100%;max-width:600px}
+.zone{border:2px dashed #1c2530;border-radius:6px;padding:44px 28px;text-align:center;cursor:pointer;background:#0c1018;transition:all .2s}
+.zone.ok{border-color:#00c48c55;background:#00c48c07}
+.icon{font-size:32px;margin-bottom:14px;opacity:.35}
+.main{font-size:14px;color:#4a5a68;margin-bottom:6px}
+.small{font-family:'Courier New',monospace;font-size:10px;color:#2a3540;letter-spacing:1px}
+.fname{font-family:'Courier New',monospace;font-size:12px;color:#00c48c;word-break:break-all;margin-top:8px}
+.fsize{font-family:'Courier New',monospace;font-size:10px;color:#2a3540;margin-top:6px}
+.err{margin-top:14px;padding:14px 16px;background:#ff4d6d0e;border:1px solid #ff4d6d30;border-radius:4px;font-family:'Courier New',monospace;font-size:11px;color:#ff4d6d;display:none;line-height:1.7}
+.btn{margin-top:18px;width:100%;padding:16px;background:#111820;color:#2a3a48;border:none;border-radius:5px;font-family:'Courier New',monospace;font-size:12px;letter-spacing:3px;font-weight:700;cursor:not-allowed;text-transform:uppercase;transition:all .2s}
+.btn.on{background:#00c48c;color:#040a0e;cursor:pointer}
+.load{margin-top:28px;text-align:center;font-family:'Courier New',monospace;font-size:10px;color:#2a4040;letter-spacing:3px;display:none}
+.dots{display:flex;justify-content:center;gap:8px;margin-top:10px}
+.dot{width:7px;height:7px;background:#00c48c;border-radius:50%;animation:p 1.2s ease-in-out infinite}
+.dot:nth-child(2){animation-delay:.2s}.dot:nth-child(3){animation-delay:.4s}
+@keyframes p{0%,100%{opacity:.15;transform:scale(.75)}50%{opacity:1;transform:scale(1.1)}}
+.res{margin-top:36px;display:none}
+.banner{padding:18px 22px;border-radius:5px;margin-bottom:20px;border-left:4px solid}
+.blabel{font-family:'Courier New',monospace;font-size:9px;letter-spacing:4px;margin-bottom:8px;opacity:.6}
+.btext{font-size:15px;font-weight:600}
+.box{background:#0c1018;border:1px solid #18222e;border-radius:5px;padding:26px}
+.btitle{font-family:'Courier New',monospace;font-size:9px;letter-spacing:4px;color:#1e2d38;margin-bottom:18px;text-transform:uppercase}
+.btext2{white-space:pre-wrap;font-size:13px;line-height:1.9;color:#b8b4ac;font-family:Georgia,serif}
+.cbtn{margin-top:10px;width:100%;padding:13px;background:transparent;color:#2e4050;border:1px solid #18222e;border-radius:5px;font-family:'Courier New',monospace;font-size:10px;letter-spacing:2px;cursor:pointer;text-transform:uppercase;transition:all .2s}
+.disc{margin-top:18px;padding:12px 16px;background:#0c1018;border:1px solid #141e28;border-radius:4px;font-family:'Courier New',monospace;font-size:9px;color:#1e2d38;letter-spacing:.8px;line-height:1.8}
+</style>
+</head>
+<body>
+<div class="label">IORA Oncologia</div>
+<h1>Pré-checagem de Segurança</h1>
+<div class="sub">Protocolo Institucional · Quimioterapia · Enfermagem</div>
+<div class="line"></div>
+<div class="wrap">
+  <div class="zone" id="zone" onclick="document.getElementById('fi').click()">
+    <input type="file" id="fi" accept="application/pdf" style="display:none" onchange="pick(this.files[0])">
+    <div id="ph"><div class="icon">⬆</div><div class="main">Toque para selecionar o hemograma</div><div class="small">apenas PDF</div></div>
+    <div id="fi2" style="display:none"><div style="font-size:28px;margin-bottom:10px">📄</div><div class="fname" id="fn"></div><div class="fsize" id="fs"></div></div>
+  </div>
+  <div class="err" id="err"></div>
+  <button class="btn" id="btn" onclick="run()" disabled>APLICAR PROTOCOLO INSTITUCIONAL</button>
+  <div class="load" id="load">PROCESSANDO<div class="dots"><div class="dot"></div><div class="dot"></div><div class="dot"></div></div></div>
+  <div class="res" id="res">
+    <div class="banner" id="ban"><div class="blabel" id="bl">RESULTADO · PROTOCOLO IORA</div><div class="btext" id="bt"></div></div>
+    <div class="box"><div class="btitle">Parecer Completo</div><div class="btext2" id="pt"></div></div>
+    <button class="cbtn" id="cb" onclick="cp()">Copiar evolução de enfermagem para prontuário</button>
+    <div class="disc">⚠ APOIO OPERACIONAL · Não substitui avaliação clínica médica. Avaliação médica obrigatória antes da administração.</div>
+  </div>
+</div>
+<script>
+const K="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";
+const SYS=`Você é o agente institucional de pré-checagem de segurança para quimioterapia da IORA Oncologia. Sua função é exclusivamente operacional e assistencial de apoio, sem substituir a avaliação médica final.
+
+EXTRAÇÃO DO HEMOGRAMA:
+- HEMOGLOBINA: valor em g/dL
+- SEGMENTADOS: valor absoluto em /mm³ (não o percentual)
+- PLAQUETAS: valor em /mm³
+- PACIENTE: nome completo
+- DATA DA COLETA
+
+PROTOCOLO IORA:
+• Hemoglobina ≥ 7,0 g/dL
+• Segmentados ≥ 1.500/mm³
+• Plaquetas ≥ 100.000/mm³
+
+REGRAS:
+1. TODOS atendidos → PRÉ-LIBERAÇÃO POSSÍVEL
+2. QUALQUER abaixo → NÃO LIBERAR — ACIONAR MÉDICO
+3. Dado ausente → NÃO LIBERAR — DADOS INSUFICIENTES
+
+FORMATO OBRIGATÓRIO:
+
+PACIENTE: [nome]
+DATA DO EXAME: [data]
+
+📋 RESUMO DOS DADOS
+Hemoglobina: X g/dL
+Segmentados: X /mm³
+Plaquetas: X /mm³
+
+⚖️ APLICAÇÃO DO PROTOCOLO
+• Hemoglobina X g/dL — [DENTRO DO MÍNIMO ✓ / ABAIXO DO MÍNIMO ✗]
+• Segmentados X /mm³ — [DENTRO DO MÍNIMO ✓ / ABAIXO DO MÍNIMO ✗]
+• Plaquetas X /mm³ — [DENTRO DO MÍNIMO ✓ / ABAIXO DO MÍNIMO ✗]
+
+🟢/🔴 RESULTADO
+[resultado claro]
+
+📌 CONDUTA OPERACIONAL
+[instrução para enfermagem]
+
+📝 EVOLUÇÃO DE ENFERMAGEM SUGERIDA
+[texto corrido para prontuário]`;
+
+let cf=null,cr=null;
+function pick(f){if(!f)return;if(f.type!=='application/pdf'){show('Envie apenas PDF.');return;}cf=f;document.getElementById('ph').style.display='none';document.getElementById('fi2').style.display='block';document.getElementById('fn').textContent=f.name;document.getElementById('fs').textContent=(f.size/1024).toFixed(1)+' KB · toque para trocar';document.getElementById('zone').classList.add('ok');hide();document.getElementById('res').style.display='none';const b=document.getElementById('btn');b.disabled=false;b.classList.add('on');}
+function show(m){const e=document.getElementById('err');e.textContent=m;e.style.display='block';}
+function hide(){document.getElementById('err').style.display='none';}
+function b64(file){return new Promise((r,j)=>{const x=new FileReader();x.onload=()=>r(x.result.split(',')[1]);x.onerror=j;x.readAsDataURL(file);});}
+async function run(){if(!cf)return;hide();document.getElementById('load').style.display='block';document.getElementById('res').style.display='none';const b=document.getElementById('btn');b.disabled=true;b.classList.remove('on');b.textContent='ANALISANDO...';try{const d=await b64(cf);const r=await fetch('https://api.anthropic.com/v1/messages',{method:'POST',headers:{'Content-Type':'application/json','x-api-key':K,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:1000,system:SYS,messages:[{role:'user',content:[{type:'document',source:{type:'base64',media_type:'application/pdf',data:d}},{type:'text',text:'Aplique o protocolo IORA neste hemograma e gere o parecer completo.'}]}]})});if(!r.ok){const e=await r.json().catch(()=>({}));throw new Error(e?.error?.message||'Erro '+r.status);}const j=await r.json();const t=(j.content||[]).filter(x=>x.type==='text').map(x=>x.text).join('');if(!t.trim())throw new Error('Resposta vazia.');cr=t;draw(t);}catch(e){show('Erro: '+(e.message||String(e)));}finally{document.getElementById('load').style.display='none';b.disabled=false;b.classList.add('on');b.textContent='APLICAR PROTOCOLO INSTITUCIONAL';}}
+function draw(t){const pos=t.includes('PRÉ-LIBERAÇÃO POSSÍVEL');const neg=t.includes('NÃO LIBERAR');const c=pos?'#00c48c':neg?'#ff4d6d':'#f5a623';const l=pos?'✅ Pré-liberação possível pela enfermagem':neg?'🚫 Não liberar — Acionar médico assistente':'⚠️ Verificar dados — Não liberar automaticamente';const ban=document.getElementById('ban');ban.style.background=c+'10';ban.style.border='1px solid '+c+'35';ban.style.borderLeftColor=c;document.getElementById('bl').style.color=c;const bt=document.getElementById('bt');bt.style.color=c;bt.textContent=l;document.getElementById('pt').textContent=t;document.getElementById('res').style.display='block';}
+function cp(){if(!cr)return;const m=cr.match(/📝 EVOLUÇÃO DE ENFERMAGEM SUGERIDA\n([\s\S]*)/);navigator.clipboard.writeText(m?m[1].trim():cr).then(()=>{const b=document.getElementById('cb');b.textContent='✓ EVOLUÇÃO COPIADA';setTimeout(()=>{b.textContent='Copiar evolução de enfermagem para prontuário';},2500);});}
+</script>
+</body>
+</html>
